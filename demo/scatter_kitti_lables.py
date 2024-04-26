@@ -1,4 +1,9 @@
 import os
+import sys
+# 获取项目根目录
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+# 添加项目根目录到 sys.path
+sys.path.append(project_root)
 import yaml
 import torch
 import matplotlib.pyplot as plt
@@ -25,8 +30,8 @@ def parse_config():
     parser.add_argument('--gpu', type=int, nargs='+', default=(1,), help='specify gpu devices')
     parser.add_argument("--seed", default=0, type=int)
     parser.add_argument('--root',type=str,default = '/data/elon',help='the root directory to save images')
-    parser.add_argument('--config_path', default='/home/elon/Projects/segment-anything-main/create_image_label/semantickitti.yaml')
-    parser.add_argument('--sam_checkpoint', type=str, default="/home/elon/Projects/segment-anything-main/checkpoint/sam_vit_h_4b8939.pth",
+    parser.add_argument('--config_path', default='../config/semantickitti.yaml')
+    parser.add_argument('--sam_checkpoint', type=str, default="../checkpoint/sam_vit_h_4b8939.pth",
                         help='Path to the SAM checkpoint file')
     parser.add_argument('--model_type', type=str, default="vit_h", help='Type of the model (e.g., vit_h)')
     parser.add_argument('--device', type=str, default="cuda", help='Device to run the model on (e.g., cuda)')
@@ -166,18 +171,18 @@ if __name__ == '__main__':
     
     
     # 读取数据
-    val_config = config['dataset_params']['val_data_loader']
+    data_config = config['dataset_params']['data_loader']
     
     get_label = config.get_label
     
-    pt_dataset = SemanticKITTI(config, data_path=val_config['data_path'], imageset='val', num_vote=val_config["batch_size"])
+    pt_dataset = SemanticKITTI(config, data_path=data_config['data_path'], imageset='val', num_vote=data_config["batch_size"])
     
     dataset_loader = torch.utils.data.DataLoader(
-                dataset=point_image_dataset_semkitti(pt_dataset, config, val_config, num_vote=val_config["batch_size"]),
-                batch_size=val_config["batch_size"],
+                dataset=point_image_dataset_semkitti(pt_dataset, config),
+                batch_size=data_config["batch_size"],
                 collate_fn=collate_fn_default,
-                shuffle=val_config["shuffle"],
-                num_workers=val_config["num_workers"]
+                shuffle=data_config["shuffle"],
+                num_workers=data_config["num_workers"]
             )    
     
     pos2neg = config['target_label']
@@ -222,29 +227,6 @@ if __name__ == '__main__':
         img_filename = os.path.join(root,  basename + ".jpg") 
 
         show_points(pos_point, neg_point, image, img_filename)
-        
-        
-        # colorMap = np.array([[0, 0, 0],   # 0 "unlabeled", and others ignored 0
-        #             [100, 150, 245],    # 1 "car" 10   495
-        #             [100, 230, 245],      # 2 "bicycle" 11 575 [100, 230, 245]
-        #             [30, 60, 150],   # 3 "motorcycle" 15 棕色 240
-        #             [80, 30, 180],   # 4 "truck" 18 绛红 290
-        #             [100, 80, 250],    # 5 "other-vehicle" 20 红色 430
-        #             [255, 30, 30],   # 6 "person" 30 淡蓝色 315
-        #             [255,40,200],   # 7 "bicyclist" 31 淡紫色 [255,40,200]
-        #             [150, 30, 90],    # 8 "motorcyclist" 32 深紫色  270
-        #             [255, 0, 255],    # 9 "road" 40 浅紫色 510
-        #             [255, 150, 255],    # 10 "parking" 44 紫色 660
-        #             [75, 0, 75],   # 11 "sidewalk" 48 紫黑色
-        #             [175, 0, 75],   # 12 "other-ground" 49 深蓝色 250
-        #             [255, 200, 0],   # 13 "building" 50 浅蓝色 455
-        #             [255, 120, 50],   # 14 "fence" 51 蓝色 425
-        #             [0, 175, 0],   # 15 "vegetation" 70 绿色175
-        #             [135, 60, 0],   # 16 "trunk" 71 蓝色 195
-        #             [150, 240, 80],   # 17 "terrain" 72 青绿色 470
-        #             [255, 240, 150],   # 18 "pole"80 天空蓝 645
-        #             [255, 0, 0]   # 19 "traffic-sign" 81 标准蓝
-        #             ]).astype(np.int32)
         
         img_filename = os.path.join(root,  basename + ".png")
         colorMap = np.array(config.colorMap, dtype=np.int32)
