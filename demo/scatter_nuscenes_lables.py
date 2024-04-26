@@ -1,9 +1,14 @@
 import os
+import sys
+# 获取项目根目录
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+# 添加项目根目录到 sys.path
+sys.path.append(project_root)
 import yaml
 import torch
 import matplotlib.pyplot as plt
 import numpy as np
-from dataset.nuscenes_dataset import SemanticKITTI, point_image_dataset_semkitti, nuScenes, point_image_dataset_nus, collate_fn_default
+from dataset.kitti_dataset import nuScenes, point_image_dataset_nus, collate_fn_default
 from easydict import EasyDict
 from argparse import ArgumentParser
 from visualize.point2cam import point2cam_label
@@ -25,8 +30,8 @@ def parse_config():
     parser.add_argument('--gpu', type=int, nargs='+', default=(1,), help='specify gpu devices')
     parser.add_argument("--seed", default=0, type=int)
     parser.add_argument('--root',type=str,default = '/data/elon',help='the root directory to save images')
-    parser.add_argument('--config_path', default='/home/elon/Projects/segment-anything-main/create_image_label/nuscenes.yaml')
-    parser.add_argument('--sam_checkpoint', type=str, default="/home/elon/Projects/segment-anything-main/checkpoint/sam_vit_h_4b8939.pth",
+    parser.add_argument('--config_path', default='../config/nuscenes.yaml')
+    parser.add_argument('--sam_checkpoint', type=str, default="../checkpoint/sam_vit_h_4b8939.pth",
                         help='Path to the SAM checkpoint file')
     parser.add_argument('--model_type', type=str, default="vit_h", help='Type of the model (e.g., vit_h)')
     parser.add_argument('--device', type=str, default="cuda", help='Device to run the model on (e.g., cuda)')
@@ -166,18 +171,18 @@ if __name__ == '__main__':
     
     
     # 读取数据
-    val_config = config['dataset_params']['val_data_loader']
+    data_config = config['dataset_params']['data_loader']
     
     get_label = config.get_label
     
-    pt_dataset = nuScenes(config, data_path=val_config['data_path'], imageset='val', num_vote=val_config["batch_size"])
+    pt_dataset = nuScenes(config, data_path=data_config['data_path'], imageset='val', num_vote=data_config["batch_size"])
     
     dataset_loader = torch.utils.data.DataLoader(
-                dataset=point_image_dataset_nus(pt_dataset, config, val_config, num_vote=val_config["batch_size"]),
-                batch_size=val_config["batch_size"],
+                dataset=point_image_dataset_nus(pt_dataset, config),
+                batch_size=data_config["batch_size"],
                 collate_fn=collate_fn_default,
-                shuffle=val_config["shuffle"],
-                num_workers=val_config["num_workers"]
+                shuffle=data_config["shuffle"],
+                num_workers=data_config["num_workers"]
             )    
     
     pos2neg = config['target_label']
@@ -223,44 +228,10 @@ if __name__ == '__main__':
 
         show_points(pos_point, neg_point, image, img_filename)
         
-
-        
-        # colorMap = np.array([[0, 0, 0],         # 0 'noise'
-        #                     [255, 120, 50],     # 1 'barrier'
-        #                     [100, 230, 245],    # 2  'bicycle'
-        #                     [135, 60, 0],       # 3  'bus'
-        #                     [100, 150, 245],    # 4  'car'
-        #                     [100, 80, 250],     # 5  'construction_vehicle'
-        #                     [30, 60, 150],      # 6  'motorcycle'
-        #                     [255, 30, 30],      # 7  'pedestrian'
-        #                     [255, 0, 0],        # 8   'traffic_cone'
-        #                     [255, 240, 150],    # 9   'trailer'
-        #                     [80, 30, 180],      # 10  'truck'
-        #                     [255, 0, 255],      # 11  'driveable_surface'
-        #                     [175, 0, 75],       # 12  'other_flat'
-        #                     [75, 0, 75] ,       # 13  'sidewalk'
-        #                     [150, 240, 80],     # 14  'terrain'
-        #                     [255, 200, 0],      # 15 'manmade'
-        #                     [0, 175, 0],        # 16   'vegetation'
-                   
-        #             ]).astype(np.int32)
-        
         img_filename = os.path.join(root,  basename + ".png")
         colorMap = np.array(config.colorMap, dtype=np.int32)
         show_mask(image, masks, img_filename, color= colorMap[get_label][::-1])
         
 
-        
-        # ---------------- visualize point to camera ------------------ #
-        # with torch.no_grad():
-        #     path = batch['path'][0]
-        #     root = '/data/elon'
-        #     basename = os.path.basename(path).split('.')[0]  
-        #     img_filename = os.path.join(root,  basename + ".png") 
-        #     for idx in range(batch['batch_size']):
-        #         # point2cam(data_dict['proj_xyzi'][idx].detach().cpu(), data_dict['img'][idx].detach().cpu(), img_filename)           
-        #         point2cam_label(batch['proj_label'][idx].detach().cpu(), batch['img'][idx].detach().cpu(), img_filename)
-                
-                
         
       
