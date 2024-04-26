@@ -8,7 +8,7 @@ dataset_params:
   pc_dataset_type: "SemanticKITTI"
   collate_type: "collate_fn_default"
   ignore_label: 0
-  label_mapping: "/home/elon/Projects/segment-anything-main/create_image_label/label_mapping.yaml"
+  label_mapping: "./config/label_mapping_kitti.yaml"
 
 
   data_loader:
@@ -40,24 +40,49 @@ target_label:
   - [9,15,18,1,14,13]                           # 19:"traffic-sign"
 
 
-colorMap: [ [0, 0, 0],          # 0 "unlabeled", and others ignored 
-            [100, 150, 245],    # 1 "car" 
-            [100, 230, 245],    # 2 "bicycle" 
-            [30, 60, 150],      # 3 "motorcycle" 
-            [80, 30, 180],      # 4 "truck" 
-            [100, 80, 250],     # 5 "other-vehicle" 
-            [255, 30, 30],      # 6 "person" 
-            [255,40,200],       # 7 "bicyclist" 
-            [150, 30, 90],      # 8 "motorcyclist" 
-            [255, 0, 255],      # 9 "road" 
-            [255, 150, 255],    # 10 "parking" 
-            [75, 0, 75],        # 11 "sidewalk"
-            [175, 0, 75],       # 12 "other-ground" 
-            [255, 200, 0],      # 13 "building"
-            [255, 120, 50],     # 14 "fence" 
-            [0, 175, 0],        # 15 "vegetation" 
-            [135, 60, 0],       # 16 "trunk" 
-            [150, 240, 80],     # 17 "terrain" 
-            [255, 240, 150],    # 18 "pole"
-            [255, 0, 0]         # 19 "traffic-sign" 
-            ]
+colorMap: 
+  - [0, 0, 0]          # 0 "unlabeled"
+  - [100, 150, 245]    # 1 "car"
+  - [100, 230, 245]    # 2 "bicycle"
+  - [30, 60, 150]      # 3 "motorcycle"
+  - [80, 30, 180]      # 4 "truck"
+  - [100, 80, 250]     # 5 "other-vehicle"
+  - [255, 30, 30]      # 6 "person"
+  - [255, 40, 200]     # 7 "bicyclist"
+  - [150, 30, 90]      # 8 "motorcyclist"
+  - [255, 0, 255]      # 9 "road"
+  - [255, 150, 255]    # 10 "parking"
+  - [75, 0, 75]        # 11 "sidewalk"
+  - [175, 0, 75]       # 12 "other-ground"
+  - [255, 200, 0]      # 13 "building"
+  - [255, 120, 50]     # 14 "fence"
+  - [0, 175, 0]        # 15 "vegetation"
+  - [135, 60, 0]       # 16 "trunk"
+  - [150, 240, 80]     # 17 "terrain"
+  - [255, 240, 150]    # 18 "pole"
+  - [255, 0, 0]        # 19 "traffic-sign"
+
+
+
+
+# colorMap: [ [0, 0, 0],          # 0 "unlabeled", and others ignored 
+#             [100, 150, 245],    # 1 "car" 
+#             [100, 230, 245],    # 2 "bicycle" 
+#             [30, 60, 150],      # 3 "motorcycle" 
+#             [80, 30, 180],      # 4 "truck" 
+#             [100, 80, 250],     # 5 "other-vehicle" 
+#             [255, 30, 30],      # 6 "person" 
+#             [255,40,200],       # 7 "bicyclist" 
+#             [150, 30, 90],      # 8 "motorcyclist" 
+#             [255, 0, 255],      # 9 "road" 
+#             [255, 150, 255],    # 10 "parking" 
+#             [75, 0, 75],        # 11 "sidewalk"
+#             [175, 0, 75],       # 12 "other-ground" 
+#             [255, 200, 0],      # 13 "building"
+#             [255, 120, 50],     # 14 "fence" 
+#             [0, 175, 0],        # 15 "vegetation" 
+#             [135, 60, 0],       # 16 "trunk" 
+#             [150, 240, 80],     # 17 "terrain" 
+#             [255, 240, 150],    # 18 "pole"
+#             [255, 0, 0]         # 19 "traffic-sign" 
+#             ]

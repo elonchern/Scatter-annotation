@@ -3,10 +3,10 @@ import yaml
 import torch
 import matplotlib.pyplot as plt
 import numpy as np
-from dataset_back import SemanticKITTI, point_image_dataset_semkitti, collate_fn_default
+from dataset.nuscenes_dataset import SemanticKITTI, point_image_dataset_semkitti, nuScenes, point_image_dataset_nus, collate_fn_default
 from easydict import EasyDict
 from argparse import ArgumentParser
-from point2cam import point2cam_label
+from visualize.point2cam import point2cam_label
 from tqdm import tqdm
 
 from segment_anything import sam_model_registry, SamPredictor
@@ -25,12 +25,12 @@ def parse_config():
     parser.add_argument('--gpu', type=int, nargs='+', default=(1,), help='specify gpu devices')
     parser.add_argument("--seed", default=0, type=int)
     parser.add_argument('--root',type=str,default = '/data/elon',help='the root directory to save images')
-    parser.add_argument('--config_path', default='/home/elon/Projects/segment-anything-main/create_image_label/semantickitti.yaml')
+    parser.add_argument('--config_path', default='/home/elon/Projects/segment-anything-main/create_image_label/nuscenes.yaml')
     parser.add_argument('--sam_checkpoint', type=str, default="/home/elon/Projects/segment-anything-main/checkpoint/sam_vit_h_4b8939.pth",
                         help='Path to the SAM checkpoint file')
     parser.add_argument('--model_type', type=str, default="vit_h", help='Type of the model (e.g., vit_h)')
     parser.add_argument('--device', type=str, default="cuda", help='Device to run the model on (e.g., cuda)')
-    parser.add_argument('--get_label', default=9, type=int, help='1: "car", 2: "bicycle", 3: "motorcycle", 4: "truck", '
+    parser.add_argument('--get_label', default=11, type=int, help='1: "car", 2: "bicycle", 3: "motorcycle", 4: "truck", '
                                                                 '5: "other-vehicle", 6: "person", 7: "bicyclist", '
                                                                 '8: "motorcyclist", 9: "road", 10: "parking", '
                                                                 '11: "sidewalk", 12: "other-ground", 13: "building", '
@@ -93,7 +93,7 @@ def get_pixel_coordinates(all_labels, instance_label, specific_label):
       
     if specific_label in [3,7,8]:
         point_numb = 1
-    elif specific_label in [14,1,4,18,19,2]:
+    elif specific_label in [14,1,4,2]:
         point_numb = 2
     elif specific_label in [5,12,6]:
         point_numb = 3
@@ -143,7 +143,7 @@ def show_points(coords_pos,coords_neg, image, img_filename):
     plt.scatter(coords_pos[:, 0], coords_pos[:, 1], color='red', marker='.',s=50)  # 注意：x轴和y轴与数组形状相反
     plt.scatter(coords_neg[:, 0], coords_neg[:, 1], color='blue', marker='^',s=16)  # 注意：x轴和y轴与数组形状相反
     plt.savefig(img_filename, bbox_inches='tight', pad_inches=0)
-    
+    plt.clf()  # 清除图形状态
 
 
 if __name__ == '__main__':
@@ -170,10 +170,10 @@ if __name__ == '__main__':
     
     get_label = config.get_label
     
-    pt_dataset = SemanticKITTI(config, data_path=val_config['data_path'], imageset='val', num_vote=val_config["batch_size"])
+    pt_dataset = nuScenes(config, data_path=val_config['data_path'], imageset='val', num_vote=val_config["batch_size"])
     
     dataset_loader = torch.utils.data.DataLoader(
-                dataset=point_image_dataset_semkitti(pt_dataset, config, val_config, num_vote=val_config["batch_size"]),
+                dataset=point_image_dataset_nus(pt_dataset, config, val_config, num_vote=val_config["batch_size"]),
                 batch_size=val_config["batch_size"],
                 collate_fn=collate_fn_default,
                 shuffle=val_config["shuffle"],
@@ -223,31 +223,44 @@ if __name__ == '__main__':
 
         show_points(pos_point, neg_point, image, img_filename)
         
+
         
-        # colorMap = np.array([[0, 0, 0],   # 0 "unlabeled", and others ignored 0
-        #             [100, 150, 245],    # 1 "car" 10   495
-        #             [100, 230, 245],      # 2 "bicycle" 11 575 [100, 230, 245]
-        #             [30, 60, 150],   # 3 "motorcycle" 15 棕色 240
-        #             [80, 30, 180],   # 4 "truck" 18 绛红 290
-        #             [100, 80, 250],    # 5 "other-vehicle" 20 红色 430
-        #             [255, 30, 30],   # 6 "person" 30 淡蓝色 315
-        #             [255,40,200],   # 7 "bicyclist" 31 淡紫色 [255,40,200]
-        #             [150, 30, 90],    # 8 "motorcyclist" 32 深紫色  270
-        #             [255, 0, 255],    # 9 "road" 40 浅紫色 510
-        #             [255, 150, 255],    # 10 "parking" 44 紫色 660
-        #             [75, 0, 75],   # 11 "sidewalk" 48 紫黑色
-        #             [175, 0, 75],   # 12 "other-ground" 49 深蓝色 250
-        #             [255, 200, 0],   # 13 "building" 50 浅蓝色 455
-        #             [255, 120, 50],   # 14 "fence" 51 蓝色 425
-        #             [0, 175, 0],   # 15 "vegetation" 70 绿色175
-        #             [135, 60, 0],   # 16 "trunk" 71 蓝色 195
-        #             [150, 240, 80],   # 17 "terrain" 72 青绿色 470
-        #             [255, 240, 150],   # 18 "pole"80 天空蓝 645
-        #             [255, 0, 0]   # 19 "traffic-sign" 81 标准蓝
+        # colorMap = np.array([[0, 0, 0],         # 0 'noise'
+        #                     [255, 120, 50],     # 1 'barrier'
+        #                     [100, 230, 245],    # 2  'bicycle'
+        #                     [135, 60, 0],       # 3  'bus'
+        #                     [100, 150, 245],    # 4  'car'
+        #                     [100, 80, 250],     # 5  'construction_vehicle'
+        #                     [30, 60, 150],      # 6  'motorcycle'
+        #                     [255, 30, 30],      # 7  'pedestrian'
+        #                     [255, 0, 0],        # 8   'traffic_cone'
+        #                     [255, 240, 150],    # 9   'trailer'
+        #                     [80, 30, 180],      # 10  'truck'
+        #                     [255, 0, 255],      # 11  'driveable_surface'
+        #                     [175, 0, 75],       # 12  'other_flat'
+        #                     [75, 0, 75] ,       # 13  'sidewalk'
+        #                     [150, 240, 80],     # 14  'terrain'
+        #                     [255, 200, 0],      # 15 'manmade'
+        #                     [0, 175, 0],        # 16   'vegetation'
+                   
         #             ]).astype(np.int32)
         
         img_filename = os.path.join(root,  basename + ".png")
+        colorMap = np.array(config.colorMap, dtype=np.int32)
         show_mask(image, masks, img_filename, color= colorMap[get_label][::-1])
         
 
+        
+        # ---------------- visualize point to camera ------------------ #
+        # with torch.no_grad():
+        #     path = batch['path'][0]
+        #     root = '/data/elon'
+        #     basename = os.path.basename(path).split('.')[0]  
+        #     img_filename = os.path.join(root,  basename + ".png") 
+        #     for idx in range(batch['batch_size']):
+        #         # point2cam(data_dict['proj_xyzi'][idx].detach().cpu(), data_dict['img'][idx].detach().cpu(), img_filename)           
+        #         point2cam_label(batch['proj_label'][idx].detach().cpu(), batch['img'][idx].detach().cpu(), img_filename)
+                
+                
+        
       
