@@ -9,7 +9,8 @@ dataset_params:
   pc_dataset_type: "nuScenes"
   collate_type: "collate_fn_default"
   ignore_label: 0
-  label_mapping: "./config/label_mapping_nuscenes.yaml"
+  num_classes: 17
+  label_mapping: "/home/elon/Workshops/Scatter-annotation/config/label_mapping_nuscenes.yaml"
 
   data_loader:
     data_path: "/data/elon/nuscenes/"
@@ -36,23 +37,22 @@ target_label:
   - [11,16,7,14,13,12,4,10,3,2,8,5,1]    # 'manmade' 15
   - [11,15,14,7,4,13,1]                  # 'vegetation' 16
 
-
-  colorMap: 
+colorMap: 
   - [0, 0, 0]           # 0 'noise'
   - [255, 120, 50]      # 1 'barrier'
-  - [100, 230, 245],    # 2  'bicycle'
-  - [135, 60, 0],       # 3  'bus'
-  - [100, 150, 245],    # 4  'car'
-  - [100, 80, 250],     # 5  'construction_vehicle'
-  - [30, 60, 150],      # 6  'motorcycle'
-  - [255, 30, 30],      # 7  'pedestrian'
-  - [255, 0, 0],        # 8  'traffic_cone'
-  - [255, 240, 150],    # 9  'trailer'
-  - [80, 30, 180],      # 10 'truck'
-  - [255, 0, 255],      # 11 'driveable_surface'
-  - [175, 0, 75],       # 12 'other_flat'
-  - [75, 0, 75] ,       # 13 'sidewalk'
-  - [150, 240, 80],     # 14 'terrain'
-  - [255, 200, 0],      # 15 'manmade'
-  - [0, 175, 0],        # 16  'vegetation'
-              
+  - [100, 230, 245]     # 2  'bicycle'
+  - [135, 60, 0]        # 3  'bus'
+  - [100, 150, 245]     # 4  'car'
+  - [100, 80, 250]      # 5  'construction_vehicle'
+  - [30, 60, 150]       # 6  'motorcycle'
+  - [255, 30, 30]       # 7  'pedestrian'
+  - [255, 0, 0]         # 8  'traffic_cone'
+  - [255, 240, 150]     # 9  'trailer'
+  - [80, 30, 180]       # 10 'truck'
+  - [255, 0, 255]       # 11 'driveable_surface'
+  - [175, 0, 75]        # 12 'other_flat'
+  - [75, 0, 75]         # 13 'sidewalk'
+  - [150, 240, 80]      # 14 'terrain'
+  - [255, 200, 0]       # 15 'manmade'
+  - [0, 175, 0]         # 16  'vegetation'
+            

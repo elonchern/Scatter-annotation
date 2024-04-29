@@ -197,7 +197,9 @@ if __name__ == '__main__':
         pos_point, pos_label = get_pixel_coordinates(label,instance_label, get_label)
         
         if not np.any(pos_point):
-            raise ValueError("No elements found in pos_point")       
+            print("No elements found in pos_point")   
+            continue
+        
         if not np.any(neg_point):
             input_point = pos_point
             input_label = pos_label

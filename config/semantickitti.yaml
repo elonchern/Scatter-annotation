@@ -7,8 +7,9 @@ dataset_params:
   dataset_type: "point_image_dataset_semkitti"
   pc_dataset_type: "SemanticKITTI"
   collate_type: "collate_fn_default"
+  num_classes: 20
   ignore_label: 0
-  label_mapping: "../config/label_mapping_kitti.yaml"
+  label_mapping: "/home/elon/Workshops/Scatter-annotation/config/label_mapping_kitti.yaml"
 
 
   data_loader:

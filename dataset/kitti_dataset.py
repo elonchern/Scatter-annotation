@@ -421,29 +421,14 @@ class nuScenes(data.Dataset):
         return data_dict, lidar_sample_token
     
 class point_image_dataset_nus(data.Dataset):
-    def __init__(self, in_dataset, config, loader_config, num_vote=1, trans_std=[0.1, 0.1, 0.1], max_dropout_ratio=0.2):
+    def __init__(self, in_dataset, config):
         'Initialization'
         self.point_cloud_dataset = in_dataset
         self.config = config
         self.ignore_label = config['dataset_params']['ignore_label']
-        self.rotate_aug = loader_config['rotate_aug']
-        self.flip_aug = loader_config['flip_aug']
-        self.transform = loader_config['transform_aug']
-        self.scale_aug = loader_config['scale_aug']
-        self.dropout = loader_config['dropout_aug']
-        self.instance_aug = loader_config.get('instance_aug', False)
-        self.max_volume_space = config['dataset_params']['max_volume_space']
-        self.min_volume_space = config['dataset_params']['min_volume_space']
-        self.num_vote = num_vote
-        self.trans_std = trans_std
-        self.max_dropout_ratio = max_dropout_ratio
+        
         self.debug = config['debug']
 
-        self.resize = config['dataset_params'].get('resize', False)
-        color_jitter = config['dataset_params']['color_jitter']
-        self.color_jitter = T.ColorJitter(*color_jitter) if color_jitter else None
-        self.flip2d = config['dataset_params']['flip2d']
-        self.image_normalizer = config['dataset_params'].get('image_normalizer', False)
 
     def map_pointcloud_to_image(self, pc, im_shape, info):
         """
