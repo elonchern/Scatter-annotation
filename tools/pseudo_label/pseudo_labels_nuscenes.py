@@ -28,16 +28,16 @@ def load_yaml(file_name):
 def parse_config():
     parser = ArgumentParser()
     # general
-    parser.add_argument('--gpu', type=int, nargs='+', default=(1,), help='specify gpu devices')
+    parser.add_argument('--gpu', type=int, nargs='+', default=(3,), help='specify gpu devices')
     parser.add_argument("--seed", default=0, type=int)
     parser.add_argument('--config_path', default='../../config/nuscenes.yaml')
     parser.add_argument('--sam_checkpoint', type=str, default="../../checkpoint/sam_vit_h_4b8939.pth",
                         help='Path to the SAM checkpoint file')
     parser.add_argument('--model_type', type=str, default="vit_h", help='Type of the model (e.g., vit_h)')
-    parser.add_argument('--pseudo_type', type=str, default="point", help='Type of the pseudo (e.g., point, image)')
+    parser.add_argument('--pseudo_type', type=str, default="image", help='Type of the pseudo (e.g., point, image)')
     parser.add_argument('--pseudo_labels_vis', type=bool, default=False)
     parser.add_argument('--device', type=str, default="cuda", help='Device to run the model on (e.g., cuda)')
-    parser.add_argument('--root',type=str,default = '/data/elon/',help='the root directory to save pseudo labels')  
+    parser.add_argument('--root',type=str,default = '/data/xzy/elon/nuscenes/imageseg/',help='the root directory to save pseudo labels')  
     # debug
     parser.add_argument('--debug', default=False, action='store_true')
 
@@ -121,7 +121,7 @@ def get_pixel_coordinates(all_labels, instance_label, specific_label):
     return np.array(coordinates),  pos_label
 
 
-def get_img_label(predictor, image, label, instance_label, pos2neg,cam_name,config):
+def get_img_label(predictor, image, label, instance_label, pos2neg,cam_id,config):
     list_masks = []
     
     # 获得图像中的label
@@ -188,8 +188,8 @@ def get_img_label(predictor, image, label, instance_label, pos2neg,cam_name,conf
         path = batch['path'][0]
         root = config.root
         basename = os.path.basename(path).split('.')[0]  
-        img_filename = os.path.join(root,  basename + cam_name + ".jpg") 
-        np.save(img_filename, merged_masks)
+        img_filename = os.path.join(root,  basename + cam_id + ".npy") 
+        np.save(img_filename, merged_masks.astype(np.uint8))
     
     merged_masks_transposed = np.transpose(merged_masks, (1, 2, 0)) # [1, 370, 1226] -> [370, 1226, 1]
     if config.pseudo_labels_vis:
@@ -297,13 +297,10 @@ if __name__ == '__main__':
     sum_class_acc = np.zeros(num_classes)
     count = 0
     
-    # folder_path = "/data/elon/val_pred_spvcnn"
-    
-    # file_list = os.listdir(folder_path)
+ 
     
     for  batch_idx, batch in enumerate(tqdm(dataset_loader)):
         path = batch['path'][0]  
-        target_file = os.path.basename(path).split('.')[0] + ".npz"
            
         points = batch['points']
         labels = batch['labels']
@@ -345,12 +342,12 @@ if __name__ == '__main__':
         p2img_idx_5 = batch['point2img_index_5']
         
     
-        merged_masks_transposed_0 = get_img_label(predictor, image_0, label_0, instance_label_0, pos2neg, '_CMA_Front', config)
-        merged_masks_transposed_1 = get_img_label(predictor, image_1, label_1, instance_label_1, pos2neg, '_CMA_Front_Left',config)
-        merged_masks_transposed_2 = get_img_label(predictor, image_2, label_2, instance_label_2, pos2neg,'_CMA_Front_Right',config)
-        merged_masks_transposed_3 = get_img_label(predictor, image_3, label_3, instance_label_3, pos2neg,'_CMA_Back',config)
-        merged_masks_transposed_4 = get_img_label(predictor, image_4, label_4, instance_label_4, pos2neg,'_CMA_Back_Left',config)
-        merged_masks_transposed_5 = get_img_label(predictor, image_5, label_5, instance_label_5, pos2neg,'_CMA_Back_Right',config)
+        merged_masks_transposed_0 = get_img_label(predictor, image_0, label_0, instance_label_0, pos2neg, '_0', config) # CMA_Front
+        merged_masks_transposed_1 = get_img_label(predictor, image_1, label_1, instance_label_1, pos2neg, '_1',config) # CMA_Front_Left
+        merged_masks_transposed_2 = get_img_label(predictor, image_2, label_2, instance_label_2, pos2neg,'_2',config) # CMA_Front_Right
+        merged_masks_transposed_3 = get_img_label(predictor, image_3, label_3, instance_label_3, pos2neg,'_3',config) # CMA_Back
+        merged_masks_transposed_4 = get_img_label(predictor, image_4, label_4, instance_label_4, pos2neg,'_4',config) # CMA_Back_Left
+        merged_masks_transposed_5 = get_img_label(predictor, image_5, label_5, instance_label_5, pos2neg,'_5',config) # CMA_Back_Right
         
     
         proj_labels_0 = merged_masks_transposed_0[img_indices_0[0][:, 0], img_indices_0[0][:, 1]]
