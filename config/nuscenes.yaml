@@ -10,10 +10,10 @@ dataset_params:
   collate_type: "collate_fn_default"
   ignore_label: 0
   num_classes: 17
-  label_mapping: "/home/elon/Workshops/Scatter-annotation/config/label_mapping_nuscenes.yaml"
+  label_mapping: "/userHome/xzy/Projects/elon/Scatter-annotation/config/label_mapping_nuscenes.yaml"
 
   data_loader:
-    data_path: "/data/elon/nuscenes/"
+    data_path: "/data/xzy/elon/nuscenes/"
     shuffle: False
     num_workers: 1
     batch_size: 1
