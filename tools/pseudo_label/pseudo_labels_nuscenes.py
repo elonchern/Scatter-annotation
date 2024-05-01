@@ -30,14 +30,14 @@ def parse_config():
     # general
     parser.add_argument('--gpu', type=int, nargs='+', default=(3,), help='specify gpu devices')
     parser.add_argument("--seed", default=0, type=int)
-    parser.add_argument('--config_path', default='../../config/nuscenes.yaml')
-    parser.add_argument('--sam_checkpoint', type=str, default="../../checkpoint/sam_vit_h_4b8939.pth",
+    parser.add_argument('--config_path', default='/userHome/xzy/Projects/elon/Scatter-annotation/config/nuscenes.yaml')
+    parser.add_argument('--sam_checkpoint', type=str, default="/userHome/xzy/Projects/elon/Scatter-annotation/checkpoint/sam_vit_h_4b8939.pth",
                         help='Path to the SAM checkpoint file')
     parser.add_argument('--model_type', type=str, default="vit_h", help='Type of the model (e.g., vit_h)')
     parser.add_argument('--pseudo_type', type=str, default="image", help='Type of the pseudo (e.g., point, image)')
     parser.add_argument('--pseudo_labels_vis', type=bool, default=False)
     parser.add_argument('--device', type=str, default="cuda", help='Device to run the model on (e.g., cuda)')
-    parser.add_argument('--root',type=str,default = '/data/xzy/elon/nuscenes/imageseg/',help='the root directory to save pseudo labels')  
+    parser.add_argument('--root',type=str,default = '/data/xzy/elon/nuscenes/imageseg/v1.0-trainval/',help='the root directory to save pseudo labels')  
     # debug
     parser.add_argument('--debug', default=False, action='store_true')
 
@@ -75,6 +75,8 @@ def get_neg_coordinates(all_labels, target_label):
     
     neg_label = np.zeros(N)
     return np.array(sel_coordinates), neg_label
+
+
 
 def get_pixel_coordinates(all_labels, instance_label, specific_label):
     assert all_labels.shape[0] == 1, "第一个维度必须等于1" # label的形状[1, 1226,370]
@@ -121,7 +123,8 @@ def get_pixel_coordinates(all_labels, instance_label, specific_label):
     return np.array(coordinates),  pos_label
 
 
-def get_img_label(predictor, image, label, instance_label, pos2neg,cam_id,config):
+
+def get_img_label(predictor, image, label, instance_label, pos2neg,config):
     list_masks = []
     
     # 获得图像中的label
@@ -182,23 +185,12 @@ def get_img_label(predictor, image, label, instance_label, pos2neg,cam_id,config
                 indices = np.where(array == value)
                 merged_masks[0, indices[1], indices[2]] = value        
     
-    
-                            
-    if config.pseudo_type == "image":
-        path = batch['path'][0]
-        root = config.root
-        basename = os.path.basename(path).split('.')[0]  
-        img_filename = os.path.join(root,  basename + cam_id + ".npy") 
-        np.save(img_filename, merged_masks.astype(np.uint8))
-    
     merged_masks_transposed = np.transpose(merged_masks, (1, 2, 0)) # [1, 370, 1226] -> [370, 1226, 1]
     if config.pseudo_labels_vis:
         colorMap = np.array(config.colorMap, dtype=np.int32)
         point2cam_label(merged_masks_transposed, image.cpu().permute(2, 0, 1), img_filename,colorMap)  
     
-    
-    
-    return merged_masks_transposed
+    return merged_masks_transposed, merged_masks
 
 
 def majority_vote(predictions):
@@ -300,6 +292,7 @@ if __name__ == '__main__':
  
     
     for  batch_idx, batch in enumerate(tqdm(dataset_loader)):
+       
         path = batch['path'][0]  
            
         points = batch['points']
@@ -342,69 +335,82 @@ if __name__ == '__main__':
         p2img_idx_5 = batch['point2img_index_5']
         
     
-        merged_masks_transposed_0 = get_img_label(predictor, image_0, label_0, instance_label_0, pos2neg, '_0', config) # CMA_Front
-        merged_masks_transposed_1 = get_img_label(predictor, image_1, label_1, instance_label_1, pos2neg, '_1',config) # CMA_Front_Left
-        merged_masks_transposed_2 = get_img_label(predictor, image_2, label_2, instance_label_2, pos2neg,'_2',config) # CMA_Front_Right
-        merged_masks_transposed_3 = get_img_label(predictor, image_3, label_3, instance_label_3, pos2neg,'_3',config) # CMA_Back
-        merged_masks_transposed_4 = get_img_label(predictor, image_4, label_4, instance_label_4, pos2neg,'_4',config) # CMA_Back_Left
-        merged_masks_transposed_5 = get_img_label(predictor, image_5, label_5, instance_label_5, pos2neg,'_5',config) # CMA_Back_Right
+        merged_masks_transposed_0, merged_masks_0 = get_img_label(predictor, image_0, label_0, instance_label_0, pos2neg, config) # CMA_Front
+        merged_masks_transposed_1, merged_masks_1 = get_img_label(predictor, image_1, label_1, instance_label_1, pos2neg, config) # CMA_Front_Left
+        merged_masks_transposed_2, merged_masks_2 = get_img_label(predictor, image_2, label_2, instance_label_2, pos2neg, config) # CMA_Front_Right
+        merged_masks_transposed_3, merged_masks_3 = get_img_label(predictor, image_3, label_3, instance_label_3, pos2neg, config) # CMA_Back
+        merged_masks_transposed_4, merged_masks_4 = get_img_label(predictor, image_4, label_4, instance_label_4, pos2neg, config) # CMA_Back_Left
+        merged_masks_transposed_5, merged_masks_5 = get_img_label(predictor, image_5, label_5, instance_label_5, pos2neg, config) # CMA_Back_Right
         
-    
-        proj_labels_0 = merged_masks_transposed_0[img_indices_0[0][:, 0], img_indices_0[0][:, 1]]
-        proj_labels_1 = merged_masks_transposed_1[img_indices_1[0][:, 0], img_indices_1[0][:, 1]]
-        proj_labels_2 = merged_masks_transposed_2[img_indices_2[0][:, 0], img_indices_2[0][:, 1]]
-        proj_labels_3 = merged_masks_transposed_3[img_indices_3[0][:, 0], img_indices_3[0][:, 1]]
-        proj_labels_4 = merged_masks_transposed_4[img_indices_4[0][:, 0], img_indices_4[0][:, 1]]
-        proj_labels_5 = merged_masks_transposed_5[img_indices_5[0][:, 0], img_indices_5[0][:, 1]]
-    
-        
-        labels_0 = np.zeros(points.shape[0], dtype=np.int32)
-        labels_0[p2img_idx_0[0]] = proj_labels_0[:,0] 
-
-        labels_1 = np.zeros(points.shape[0], dtype=np.int32)
-        labels_1[p2img_idx_1[0]] = proj_labels_1[:,0] 
-        
-        labels_2 = np.zeros(points.shape[0], dtype=np.int32)
-        labels_2[p2img_idx_2[0]] = proj_labels_2[:,0]   
-        
-        labels_3 = np.zeros(points.shape[0], dtype=np.int32)
-        labels_3[p2img_idx_3[0]] = proj_labels_3[:,0]
-                
-        labels_4 = np.zeros(points.shape[0], dtype=np.int32)
-        labels_4[p2img_idx_4[0]] = proj_labels_4[:,0] 
-        
-        labels_5 = np.zeros(points.shape[0], dtype=np.int32)
-        labels_5[p2img_idx_5[0]] = proj_labels_5[:,0] 
-        
-        stack_label_1 = np.stack((labels_0, labels_1), axis=0)
-        pseudo_labels_1 = majority_vote(stack_label_1) 
-
-        stack_label_2 = np.stack((labels_0, labels_1, labels_2), axis=0)
-        pseudo_labels_2 = majority_vote(stack_label_2) 
-        
-        stack_label_3 = np.stack((labels_0, labels_1, labels_2, labels_3), axis=0)
-        pseudo_labels_3 = majority_vote(stack_label_3)        
-        
-        stack_label_4 = np.stack((labels_0, labels_1, labels_2, labels_3, labels_4), axis=0)
-        pseudo_labels_4 = majority_vote(stack_label_4)                
-        
-        stack_label_5 = np.stack((labels_0, labels_1, labels_2, labels_3, labels_4, labels_5), axis=0)
-        pseudo_labels_5 = majority_vote(stack_label_5)
-        
-        
-        path = batch['path'][0]
-        root = config.root
-        if not os.path.exists(root+'val_pred_spvcnn'):
-                os.mkdir(root+'val_pred_spvcnn')              
-        basename = os.path.basename(path).split('.')[0]
-        
-        if config.pseudo_labels_vis:
-            filename = os.path.join(root, 'val_pred_spvcnn', basename + ".ply") 
-            colorMap = np.array(config.colorMap, dtype=np.int32)
-            labeled_point2ply(points, labels,filename,colorMap)     
+        if config.pseudo_type == "image":
+            path = batch['path'][0]         
+            root = config.root
+            basename = os.path.basename(path).split('.')[0]  
+            img_filename = os.path.join(root,  basename + ".npz") 
+            
+            np.savez_compressed(img_filename, 
+                    idx_0=merged_masks_0.astype(np.uint8), 
+                    idx_1=merged_masks_1.astype(np.uint8), 
+                    idx_2=merged_masks_2.astype(np.uint8), 
+                    idx_3=merged_masks_3.astype(np.uint8),
+                    idx_4=merged_masks_4.astype(np.uint8),
+                    idx_5=merged_masks_5.astype(np.uint8))
         
         if config.pseudo_type == "point":
+            proj_labels_0 = merged_masks_transposed_0[img_indices_0[0][:, 0], img_indices_0[0][:, 1]]
+            proj_labels_1 = merged_masks_transposed_1[img_indices_1[0][:, 0], img_indices_1[0][:, 1]]
+            proj_labels_2 = merged_masks_transposed_2[img_indices_2[0][:, 0], img_indices_2[0][:, 1]]
+            proj_labels_3 = merged_masks_transposed_3[img_indices_3[0][:, 0], img_indices_3[0][:, 1]]
+            proj_labels_4 = merged_masks_transposed_4[img_indices_4[0][:, 0], img_indices_4[0][:, 1]]
+            proj_labels_5 = merged_masks_transposed_5[img_indices_5[0][:, 0], img_indices_5[0][:, 1]]
+        
             
+            labels_0 = np.zeros(points.shape[0], dtype=np.int32)
+            labels_0[p2img_idx_0[0]] = proj_labels_0[:,0] 
+
+            labels_1 = np.zeros(points.shape[0], dtype=np.int32)
+            labels_1[p2img_idx_1[0]] = proj_labels_1[:,0] 
+            
+            labels_2 = np.zeros(points.shape[0], dtype=np.int32)
+            labels_2[p2img_idx_2[0]] = proj_labels_2[:,0]   
+            
+            labels_3 = np.zeros(points.shape[0], dtype=np.int32)
+            labels_3[p2img_idx_3[0]] = proj_labels_3[:,0]
+                    
+            labels_4 = np.zeros(points.shape[0], dtype=np.int32)
+            labels_4[p2img_idx_4[0]] = proj_labels_4[:,0] 
+            
+            labels_5 = np.zeros(points.shape[0], dtype=np.int32)
+            labels_5[p2img_idx_5[0]] = proj_labels_5[:,0] 
+            
+            stack_label_1 = np.stack((labels_0, labels_1), axis=0)
+            pseudo_labels_1 = majority_vote(stack_label_1) 
+
+            stack_label_2 = np.stack((labels_0, labels_1, labels_2), axis=0)
+            pseudo_labels_2 = majority_vote(stack_label_2) 
+            
+            stack_label_3 = np.stack((labels_0, labels_1, labels_2, labels_3), axis=0)
+            pseudo_labels_3 = majority_vote(stack_label_3)        
+            
+            stack_label_4 = np.stack((labels_0, labels_1, labels_2, labels_3, labels_4), axis=0)
+            pseudo_labels_4 = majority_vote(stack_label_4)                
+            
+            stack_label_5 = np.stack((labels_0, labels_1, labels_2, labels_3, labels_4, labels_5), axis=0)
+            pseudo_labels_5 = majority_vote(stack_label_5)
+            
+            
+            path = batch['path'][0]
+            root = config.root
+            if not os.path.exists(root+'val_pred_spvcnn'):
+                    os.mkdir(root+'val_pred_spvcnn')              
+            basename = os.path.basename(path).split('.')[0]
+            
+            if config.pseudo_labels_vis:
+                filename = os.path.join(root, 'val_pred_spvcnn', basename + ".ply") 
+                colorMap = np.array(config.colorMap, dtype=np.int32)
+                labeled_point2ply(points, labels,filename,colorMap)     
+            
+               
             filename = os.path.join(root, 'val_pred_spvcnn', basename + ".npz")                     
 
             np.savez(filename, 
