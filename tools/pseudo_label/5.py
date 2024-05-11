@@ -4,7 +4,7 @@ import sys
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 # 添加项目根目录到 sys.path
 sys.path.append(project_root)
-os.environ["CUDA_VISIBLE_DEVICES"] = '6,'
+os.environ["CUDA_VISIBLE_DEVICES"] = '1,'
 import yaml
 import torch
 import datetime
@@ -31,7 +31,7 @@ def load_yaml(file_name):
 def parse_config():
     parser = ArgumentParser()
     # general
-    parser.add_argument('--gpu', type=int, nargs='+', default=(6,), help='specify gpu devices')
+    parser.add_argument('--gpu', type=int, nargs='+', default=(1,), help='specify gpu devices')
     parser.add_argument("--seed", default=0, type=int)
     parser.add_argument('--config_path', default='/userHome/xzy/Projects/elon/Scatter-annotation/config/nuscenes.yaml')
     parser.add_argument('--sam_checkpoint', type=str, default="/userHome/xzy/Projects/elon/Scatter-annotation/checkpoint/sam_vit_h_4b8939.pth",
@@ -275,8 +275,8 @@ if __name__ == '__main__':
     # 读取数据
     data_config = config['dataset_params']['data_loader']
     # 指定数据集的部分范围
-    start_idx = 0
-    end_idx = 5626
+    start_idx = 22504
+    end_idx = 28130
     subset_indices = list(range(start_idx, end_idx))
     
     pt_dataset = nuScenes(config, data_path=data_config['data_path'], imageset='train', num_vote=data_config["batch_size"])

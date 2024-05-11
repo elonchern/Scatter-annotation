@@ -9,11 +9,11 @@ dataset_params:
   collate_type: "collate_fn_default"
   num_classes: 20
   ignore_label: 0
-  label_mapping: "/home/elon/Workshops/Scatter-annotation/config/label_mapping_kitti.yaml"
+  label_mapping: "/userHome/xzy/Projects/elon/Scatter-annotation/config/label_mapping_kitti.yaml"
 
 
   data_loader:
-    data_path: "/data/elon/MMSCNet/semantic_kitti/sequences/"
+    data_path: "/data/xzy/elon/JS3CNet/semantic_kitti/sequences/"
     shuffle: False
     num_workers: 1
     batch_size: 1

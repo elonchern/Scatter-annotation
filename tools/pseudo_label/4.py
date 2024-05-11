@@ -275,8 +275,8 @@ if __name__ == '__main__':
     # 读取数据
     data_config = config['dataset_params']['data_loader']
     # 指定数据集的部分范围
-    start_idx = 0
-    end_idx = 5626
+    start_idx = 16878
+    end_idx = 22504
     subset_indices = list(range(start_idx, end_idx))
     
     pt_dataset = nuScenes(config, data_path=data_config['data_path'], imageset='train', num_vote=data_config["batch_size"])

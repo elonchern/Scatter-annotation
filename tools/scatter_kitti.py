@@ -4,6 +4,7 @@ import sys
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 # 添加项目根目录到 sys.path
 sys.path.append(project_root)
+os.environ["CUDA_VISIBLE_DEVICES"] = '5,'
 import yaml
 import torch
 import datetime
@@ -27,11 +28,11 @@ def load_yaml(file_name):
 def parse_config():
     parser = ArgumentParser()
     # general
-    parser.add_argument('--gpu', type=int, nargs='+', default=(1,), help='specify gpu devices')
+    parser.add_argument('--gpu', type=int, nargs='+', default=(5,), help='specify gpu devices')
     parser.add_argument("--seed", default=0, type=int)
-    parser.add_argument("--show_dataset",default=False, action='store_true')
+    parser.add_argument("--show_dataset",default=True, action='store_true')
     parser.add_argument('--config_path', default='../config/semantickitti.yaml')
-    parser.add_argument('--root',type=str,default = '/data/elon/val_pred_spvcnn',help='the root directory to save scatter-kitti')
+    parser.add_argument('--root',type=str,default = '/data/xzy/elon/seg',help='the root directory to save scatter-kitti')
     # debug
     parser.add_argument('--debug', default=False, action='store_true')
 
@@ -60,11 +61,11 @@ def get_pixel_coordinates(all_labels, instance_label, specific_label):
     elif specific_label in [3,19]:
         point_numb = 1
     elif specific_label in [5,12,6,7]:
-        point_numb = 2
+        point_numb = 1
     elif specific_label in [13,10]:
-        point_numb = 3
+        point_numb = 2
     else: # 9 11 16 15 17
-        point_numb = 4
+        point_numb = 2
     
     for instance in unique_instances:
         # 找到当前实例对应的像素位置
