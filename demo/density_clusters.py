@@ -37,5 +37,5 @@ point_cloud.points = o3d.utility.Vector3dVector(filtered_points)  # 设置点的
 point_cloud.colors = o3d.utility.Vector3dVector(point_colors)  # 设置点的颜色
 
 # 保存为 PLY 文件
-output_ply_path = "clustered_point_cloud.ply"  # 保存路径
+output_ply_path = "../work_dirs/clustered_point_cloud.ply"  # 保存路径
 o3d.io.write_point_cloud(output_ply_path, point_cloud)
