@@ -1,4 +1,8 @@
 import os
+import sys
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+# 添加项目根目录到 sys.path
+sys.path.append(project_root)
 import yaml
 import torch
 import matplotlib.pyplot as plt
@@ -25,7 +29,7 @@ def parse_config():
     parser.add_argument('--gpu', type=int, nargs='+', default=(1,), help='specify gpu devices')
     parser.add_argument("--seed", default=0, type=int)
     parser.add_argument('--root',type=str,default = '/data/elon',help='the root directory to save images')
-    parser.add_argument('--config_path', default='/home/elon/Workshops/Scatter-annotation/config/semantickitti.yaml')
+    parser.add_argument('--config_path', default='/userHome/xzy/Projects/elon/Scatter-annotation/config/semantickitti.yaml')
     
     
  
@@ -78,7 +82,7 @@ if __name__ == '__main__':
         # ---------------- visualize point to camera ------------------ #
         with torch.no_grad():
             path = batch['path'][0]
-            root = '/data/elon/'
+            root = '/data/xzy/elon/'
             basename = os.path.basename(path).split('.')[0]  
             img_filename = os.path.join(root,  basename + ".png") 
             colorMap = np.array(config.colorMap, dtype=np.int32)
@@ -92,5 +96,5 @@ if __name__ == '__main__':
             # 随机选择要置零的索引
             indices_to_zero = np.random.choice(non_zero_indices, size=num_to_zero, replace=False)  # 无放回抽样
             # label[indices_to_zero] = 0  # 设置为零
-            labeled_point2ply(points[non_zero_indices], label[non_zero_indices],point_filename,colorMap)                
+            # labeled_point2ply(points[non_zero_indices], label[non_zero_indices],point_filename,colorMap)                
       

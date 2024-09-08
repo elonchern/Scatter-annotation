@@ -107,14 +107,16 @@ def point2cam_label(proj_label, image,img_filename,colorMap):  #
     img_proj_label[img_proj_label==255] = 0
     img_proj_label = img_proj_label.flatten()
 
+    
     vis_label  = np.zeros((size[0], size[1], 3), dtype=np.uint8)
+    
     for i in range(len(img_proj_label)):
-        vis_label[xy_label[i][0],xy_label[i][1],0] = colorMap[img_proj_label[i]][2]        
+        vis_label[xy_label[i][0],xy_label[i][1],0] = colorMap[img_proj_label[i]][0]        
         vis_label[xy_label[i][0],xy_label[i][1],1] = colorMap[img_proj_label[i]][1]
-        vis_label[xy_label[i][0],xy_label[i][1],2] = colorMap[img_proj_label[i]][0]          
+        vis_label[xy_label[i][0],xy_label[i][1],2] = colorMap[img_proj_label[i]][2]          
       
     # cv2.imwrite(img_filename,vis_label)
-    kernel = np.ones((3,3),np.uint8)                        # 设置kenenel大小     
+    # kernel = np.ones((3,3),np.uint8)                        # 设置kenenel大小     
     # vis_label = cv2.dilate(vis_label,kernel,iterations=1) # 膨胀还原图形
 
     temp = np.sum(vis_label,axis=2)
@@ -128,15 +130,19 @@ def point2cam_label(proj_label, image,img_filename,colorMap):  #
     b_rgb = image.swapaxes(0,2)
     b_rgb = b_rgb.swapaxes(0,1)
     
+    
+   
     b_rgb = b_rgb.cpu().numpy()
     
     # color 
     color_point_img = proj_point_mask * b_rgb + vis_label
     
-    cv2.imwrite(img_filename,color_point_img) 
     
-    # color_point_img = Image.fromarray(np.uint8(color_point_img))
-    # color_point_img.save(img_filename)     
+    
+    # cv2.imwrite(img_filename,color_point_img) 
+    
+    color_point_img = Image.fromarray(np.uint8(color_point_img))
+    color_point_img.save(img_filename)     
     
     
 def point2cam(proj_point, image,img_filename):  #

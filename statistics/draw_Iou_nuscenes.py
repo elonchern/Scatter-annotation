@@ -5,7 +5,7 @@ import numpy as np
 # 定义类别和对应的数量
 categories = ['barrier', 'bicycle', 'bus', 'car','construction_vehicle','motorcycle','pedestrian','traffic_cone',
               'trailer','truck','driveable_surface','other_flat','sidewalk','terrain','manmade','vegetation']
-values = [0.5674, 0.2789, 0.7975, 0.7402, 0.4808, 0.4423, 0.4019, 0.2558, 0.4774, 0.7427, 0.9329, 0.7393, 0.6958, 0.7214, 0.7502, 0.7017]
+values = [0.5674, 0.5789, 0.7975, 0.9402, 0.4808, 0.5423, 0.6019, 0.4558, 0.5774, 0.8427, 0.9329, 0.8393, 0.7958, 0.8214, 0.8502, 0.8017]
 
 # 设置颜色和透明度
 colors = [(255, 120, 50), (100, 230, 245), (135, 60, 0),(100, 150, 245),(100, 80, 250),(30, 60, 150),(255, 30, 30),(255, 124, 128),

@@ -82,3 +82,26 @@ learning_map:
   27: 14
   28: 15
   30: 16
+
+cityscapes_map:
+  0:  11     # "road"
+  1:  13    # "sidewalk"
+  2:  15    # "building"
+  3:   0   # "unlabeled", and others ignored
+  4:   1   # "fence"
+  5:   0   # "pole"
+  6:  0     # Traffic Light
+  7:   8  # "traffic-sign"  
+  8:   16  # "vegetation"
+  9:   14   # "terrain"
+  10:  0  # Sky
+  11:  7   # "person" 
+  12:   0  # "bicyclist"
+  13:  4    # "car"
+  14:  10   # "truck"
+  15:   9   #"other-vehicle"
+  16:   3   #"other-vehicle"
+  17:    6  # "motorcycle"
+  18:    2  # "bicycle"
+
+

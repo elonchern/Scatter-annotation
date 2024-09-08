@@ -27,7 +27,7 @@ plt.ylabel('Value')
 plt.title('Bar Chart')
 
 # Set y-axis limit to start from 0.01
-plt.ylim(0.01, 0.85)
+plt.ylim(0.01, 0.9)
 
 # Save the plot as an image
 plt.savefig('../work_dirs/bar_chart.png')

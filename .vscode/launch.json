@@ -1,0 +1,19 @@
+{
+    // 使用 IntelliSense 了解相关属性。 
+    // 悬停以查看现有属性的描述。
+    // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python 调试程序: 包含参数的当前文件",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": ["--config_path", "/userHome/xzy/Projects/elon/Scatter-annotation/config/nuscenes.yaml",
+                    "--sam_checkpoint", "/userHome/xzy/Projects/elon/Scatter-annotation/checkpoint/sam_vit_h_4b8939.pth",
+                "--config-file", "/userHome/xzy/Projects/elon/Scatter-annotation/Mask2Former/configs/cityscapes/semantic-segmentation/maskformer2_R50_bs16_90k.yaml", 
+            "--opts", "MODEL.WEIGHTS", "/userHome/xzy/Projects/elon/Scatter-annotation/checkpoint/model_final_cc1b1f.pkl"]
+        }
+    ]
+}
